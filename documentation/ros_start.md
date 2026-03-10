@@ -1,4 +1,5 @@
-Ref: https://wiki.ros.org/ROS/Tutorials
+Ref: https://wiki.ros.org/ROS/Tutorials \
+**ROS는 conda 끄고 실행하기**
 
 # How to start?
 There will be many workspaces \
