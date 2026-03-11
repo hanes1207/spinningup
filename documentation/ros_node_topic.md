@@ -193,3 +193,187 @@ The type of the message sent on a topic can be determined using rostopic type. \
 
     When the new window pop up, a text box in the upper left corner gives you the ability to add any topic to the plot.
 
+
+
+
+# ROS Services and Params
+
+### ROS Services
+another way that nodes can communicate with each other. Services allow nodes to send a request and receive a response.
+
+ - `rosservice` \
+    rosservice can attach to ROS's client/service framework with services.
+    ```
+    rosservice list         print information about active services
+    rosservice call         call the service with the provided args
+    rosservice type         print service type
+    rosservice find         find services by service type
+    rosservice uri          print service ROSRPC uri
+    ```
+
+ - `rosservice list` \
+    shows us that the turtlesim node provides nine service
+
+ - `rosservice type [service]` \
+    e.g.
+    ```
+    $ rosservice type /clear
+    # Then we get >>> std_srvs/Empty
+    ```
+    `/clear` service is empty. \
+        - service call takes no argument \
+        - sends no data when making a request and receives no data when receiving a response.
+
+ - `rossrv show [type]` \
+    e.g.
+    ```
+    $ rosservice type /spawn | rossrv show
+    # Then we get
+        float32 x
+        float32 y
+        float32 theta
+        string name
+        ---
+        string name
+    ```
+
+ - `rosservice call [service] [args]` \
+    e.g.
+    ```
+    rosservice call /clear
+    ```
+    It just clears the background of the turtlesim_node.
+
+    ```
+    # Spawn a new turtle at a given location and orientation. The name field is optional.
+    $ rosservice call /spawn 2 2 0.2 ""
+    # service call returns with the name of the newly created turtle
+        name: turtle2
+    ```
+
+ - `rosparam` \
+    Allows you to store and manipulate data on the ROS Parameter Server. \
+    Store integers, floats, boolean, dictionaries, and lists. \
+    Uses the YAML markup language for syntax.
+    ```
+    rosparam set            set parameter
+    rosparam get            get parameter
+    rosparam load           load parameters from file
+    rosparam dump           dump parameters to file
+    rosparam delete         delete parameter
+    rosparam list           list parameter names
+    ```
+
+ - `rosparam list` \
+    turtlesim node has three parameters on the param server for background color.
+
+ - `rosparam set [param_name]` \
+    e.g.
+    ```
+    $ rosparam set /turtlesim/background_r 150
+    $ rosservice call /clear # 해줘야지 색상이 적용됌
+    ```
+
+ - `rosparam get [param_name]` \
+    Get the values of parameters on the param server.
+
+ - `rosparam get / ` \
+    Show contents of the entire Parameter Server. \
+    e.g.
+    ```
+    $ rosparam get /
+    # This is what we will see
+        rosdistro: 'noetic
+
+            '
+        roslaunch:
+            uris:
+                host_nxt__43407: http://nxt:43407/
+        rosversion: '1.15.5
+
+            '
+        run_id: 7ef687d8-9ab7-11ea-b692-fcaa1494dbf9
+        turtlesim:
+            background_b: 255
+            background_g: 86
+            background_r: 69
+    ```
+
+ - `rosparam dump [file_name] [namespace]` \
+    e.g.
+    ```
+    # We write all the parameters to the file params.yaml
+    $ rosparam dump params.yaml
+
+    # rosparam dump params.yaml /my_node 처럼 실행하면, /my_node 아래에 있는 파라미터들만 골라서 저장한다.
+    $ rosparam dump params.yaml /turtlesim
+    ```
+
+ - `rosparam load [file_name] [namespace]` \
+    load는 YAML 파일에 적힌 내용을 읽어서 **파라미터 서버에 값을 기록(Set)** 하는 과정입니다. \
+    `rosparam load params.yaml copy_turtle`을 실행하면, YAML 파일 내부의 모든 파라미터 키(key) 앞에 /copy_turtle/이라는 접두사가 붙는다.
+    e.g.
+    ```
+    root@7da0021d5679:~/practice# cat params.yaml 
+    background_b: 255
+    background_g: 86
+    background_r: 150
+
+    root@7da0021d5679:~/practice# rosparam load params.yaml copy_turtle
+
+    root@7da0021d5679:~/practice# rosparam dump params.yaml
+    root@7da0021d5679:~/practice# cat params.yaml 
+    copy_turtle:
+        background_b: 255
+        background_g: 86
+        background_r: 150
+    rosdistro: 'noetic
+
+        '
+    roslaunch:
+        uris:
+            host_7da0021d5679__41965: http://7da0021d5679:41965/
+    rosversion: '1.17.4
+
+        '
+    run_id: dcd6c9f0-1c5f-11f1-84e9-0242ac110002
+    turtlesim:
+        background_b: 255
+        background_g: 86
+        background_r: 150
+    ```
+
+
+
+
+# Appendix 1: Service랑 Pub/Sub 구조의 차이가 무엇인가?
+| 구분 | Topic (Pub/Sub) | Service (Srv) |
+|---|---|---|
+| 통신 방향 | 단방향 (One-way) | 양방향 (Two-way) |
+| 핵심 구조 | Publisher & Subscriber | Client & Server |
+| 데이터 흐름 | 지속적 스트리밍 (Continuous) | 요청 시 1회 처리 (Event-based) |
+| 비유 | "라디오 방송, 게시판" | "전화 통화, 식당 주문" |
+| 응답(Response) | 없음 (보내기만 함) | 있음 (결과값을 반환함) |
+| 주 사용처 | "센서 데이터, 상태 모니터링 등" | "특정 동작 명령, 환경 설정 등" |
+| 동기/비동기 | 비동기 (Asynchronous) | 동기 (Synchronous) |
+
+
+
+
+# Appendix 2: Parameter가 load 되는 방법
+파라미터 서버(Parameter Server)는 일종의 정적 저장소.
+
+`rosparam set`: 서버에 있는 값을 바꿀 뿐입니다. \
+ - 노드의 동작: 보통 노드는 시작될 때(Init) 파라미터 서버에서 값을 딱 한 번 읽어와서 자기 변수에 저장합니다. \
+ - 문제 발생: 서버의 값이 바뀌어도 노드는 이미 로컬 변수에 저장된 옛날 값을 계속 사용합니다.
+
+`/clear` 서비스의 역할 \
+turtlesim 노드는 배경색 파라미터(background_r, g, b)를 매 순간 감시하지 않는다. \
+대신, `/clear` 서비스가 호출되는 시점에 **"아, 지금 파라미터 서버에 가서 색상 값을 다시 읽어와야겠다!"** 라고 설계되어 있다.
+
+노드에 따른 params를 업데이트 하는 방식
+| 방식 | 설명 |
+|---|---|
+| 재시작 (Restart) | 가장 일반적입니다. 노드를 껐다 켜면 새로 시작하면서 값을 다시 읽습니다. |
+| 특정 서비스 호출 | turtlesim의 /clear처럼 특정 트리거가 발생할 때 다시 읽도록 설계된 경우입니다. |
+| Dynamic Reconfigure | rqt_reconfigure를 사용하여 노드를 재시작하지 않고도 실시간으로 값을 반영하는 방식입니다. (가장 세련된 방법!) |
