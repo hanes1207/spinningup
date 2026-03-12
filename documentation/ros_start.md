@@ -123,3 +123,18 @@ $ catkin_make install --source my_src  # (optionally)
 The **build folder** is the default location of the build space and is where cmake and make are called to configure and build your packages.
 
 The **devel folder** is the default location of the devel space, which is where your executables and libraries go before you install your packages.
+
+
+
+
+# Using rosed to edit files in ROS
+
+### `$ rosed [package_name] [filename]`
+e.g. `$ rosed roscpp Logger.msg`
+
+### Changing editor
+Edit ~/.bashrc file to include
+
+ - `export EDITOR='nano -w'` to use nano
+ - `export EDITOR='emacs -nw'` to use emacs
+
