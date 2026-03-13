@@ -27,7 +27,7 @@ setup(
         'scipy',
         'seaborn==0.8.1',
         # 'tensorflow>=1.8.0,<2.0',
-        'torch==2.1.0',
+        'torch==1.13.1',
         'tqdm',
         'mujoco-py<2.2,>=2.1', 
         'cython<3'
