@@ -38,7 +38,12 @@ def mlp(sizes, activation, output_activation=nn.Identity):
     #   YOUR CODE HERE    #
     #                     #
     #######################
-    pass
+    layers = []
+    for i in range(len(sizes) - 1):
+        act = activation if i < len(sizes) - 2 else output_activation
+        layers += [nn.Linear(sizes[i], sizes[i+1]), act()]
+
+    return nn.Sequential(*layers)
 
 class DiagonalGaussianDistribution:
 
@@ -57,7 +62,20 @@ class DiagonalGaussianDistribution:
         #   YOUR CODE HERE    #
         #                     #
         #######################
-        pass
+        mu = self.mu
+        log_std = self.log_std
+
+        if mu.dim() == 1:
+            mu = mu.unsqueeze(0)
+
+        std = torch.exp(log_std)
+
+        if std.dim() == 1:
+            std = std.unsqueeze(0)
+
+        pi = mu + std * torch.randn_like(mu)        
+        
+        return pi
 
     #================================(Given, ignore)==========================================#
     def log_prob(self, value):
@@ -85,9 +103,10 @@ class MLPGaussianActor(nn.Module):
         #   YOUR CODE HERE    #
         #                     #
         #######################
-        # self.log_std = 
-        # self.mu_net = 
-        pass 
+        log_std = -0.5 * np.ones(act_dim, dtype=np.float32)
+        self.log_std = torch.nn.Parameter(torch.as_tensor(log_std))
+        self.mu_net = mlp([obs_dim] + list(hidden_sizes) + [act_dim], activation)
+        
 
     #================================(Given, ignore)==========================================#
     def forward(self, obs, act=None):

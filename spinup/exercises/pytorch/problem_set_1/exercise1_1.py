@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 
+EPS=1e-8
 """
 
 Exercise 1.1: Diagonal Gaussian Likelihood
@@ -29,7 +30,7 @@ def gaussian_likelihood(x, mu, log_std):
     #                     #
     #######################
     k = x.shape[1]
-    pre_sum = ((x - mu) / torch.exp(log_std)) ** 2 + 2 * log_std
+    pre_sum = ((x - mu) / (torch.exp(log_std) + EPS)) ** 2 + 2 * log_std
     log_likelihood = -0.5 * (torch.sum(pre_sum, dim=1) + k * np.log(2 * np.pi))
 
     return log_likelihood
