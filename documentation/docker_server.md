@@ -117,3 +117,20 @@ VNC 클라이언트에서 `server-ip:5900`
 Xvfb는 기본적으로 OpenGL 지원 없음 \
 swrast (software renderer) 필요 \
 근데 그것도 설치 안 돼 있음
+
+- mesa 설치
+```
+apt install -y \
+  libgl1-mesa-glx \
+  libgl1-mesa-dri \
+  mesa-utils
+```
+
+- 환경변수 설정
+```
+export DISPLAY=:1
+export LIBGL_ALWAYS_SOFTWARE=1
+```
+
+--> But 다시 안될 것임. Xvfb가 OpenGL을 지원 안한다. \
+--> 방법은... 없다... (맥북은...)
